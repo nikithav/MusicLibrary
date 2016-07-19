@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script type="text/javascript" src = "https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript"> 
+    	$(document).ready(function(){ 
+    		
+    		$("#saveDiv").hide();
+    		$("#deleteDiv").hide();
+    		$("#resultsTable").hide();
+    		getTracksByUser();
+        userName = "{{user}}";
+
+    	});
+    	
+    	var addTrack = function() {
+    		$.ajax({
+  				url: "/saveTrack",
+  				data: {
+    				name: $("#name").val(),
+    				artist: $("#artist").val(),
+    				album: $("#album").val(),
+    				year: $("#year").val(),
+            user: userName
+  					},
+		  		success: function( data ) {
+    				$( "#saveResult" ).html( "<strong>" + data.status + "</strong> " );
+    				$("#saveDiv").show();
+    				document.getElementById("myForm").reset();
+    				getAllTracks();
+  				}
+			});
+    	};
+
+      var getTracksByUser = function() {
+        var userName = "{{user}}";
+        $.ajax({
+          url: "/getByUser",
+          data: {
+            user: userName
+          },
+          success: function( data ) {
+            window.allItems = data;
+            var $resultsTable = $("#resultsTable");
+            data.forEach(function(track) { 
+            if(track.name && track.artist && track.album && track.year ) { 
+              var $track = "<tr>" 
+                    + "<td>" + track.name + "</td>" 
+                    + "<td>" + track.artist + "</td>" 
+                    + "<td>" + track.album + "</td>" 
+                    + "<td>" + track.year + "</td>" 
+                  + "</tr>";
+            $resultsTable.append($track);
+            
+              }
+
+            });
+            $resultsTable.show();
+          }
+      });
+      };
+
+    	var deleteTrack = function() {
+    		$.ajax({
+    			url: "/deleteTrack",
+    			data: {
+    				name: $("#delete-track").val(),
+            user: userName
+    			},
+    			success: function(data) {
+    				$( "#deleteResult" ).html( "<strong>" + data.status + " successfully!</strong> " );
+    				$("#deleteDiv").show();
+    				getAllTracks();
+    			}
+    		});
+    	};
+
+    	var getTrackByYear = function() {
+
+    		$.ajax({
+  				url: "/findByYear",
+  				data: {
+  					year: $("#search-year").val(),
+            user: userName
+  				},
+		  		success: function( data ) {
+    				var $resultsTable = $("#resultsTable").empty();
+    				$resultsTable.append("<th>Track Name</th><th>Artist</th><th>Album</th><th>Year</th>");
+    				data.forEach(function(track) { 
+						if(track.name && track.artist && track.album && track.year ) { 
+							var $track = "<tr>" 
+						 				+ "<td>" + track.name + "</td>" 
+						 				+ "<td>" + track.artist + "</td>" 
+						 				+ "<td>" + track.album + "</td>" 
+						 				+ "<td>" + track.year + "</td>" 
+						 			+ "</tr>";
+							$resultsTable.append($track);
+							
+    					} 
+    					
+    			});
+    				$resultsTable.show();
+    				$("#track-heading").text("View your favorite Tracks in " + data[0].year);
+  				}
+			});
+    	};
+
+   	</script>
+  </head>
+  <body>
+  	<div id="container">
+  		<div class="panel panel-default">
+  			<div class="panel-heading">
+  				<h2 class="text-center label label-default"><a href="/">Music Library</a></h2>
+  			</div>
+  			<div class="panel-body">
+	  <div class="col-md-7">
+    	      <div class="form-group">
+          <input type="text" id = "search-year" class="form-control" placeholder = "Search Tracks By Year">
+        </div>
+        <button type="button" class="btn btn-default" id = "search-track-btn" type="button" onclick="getTrackByYear()">Search</button>
+
+	  	<h3 id="track-heading">Welcome <strong>{{user}}</strong>! Your favorite Tracks List </h3>
+	  	<table class="table table-bordered table-striped" id="resultsTable">
+				<th>Track Name</th>
+				<th>Artist</th>
+				<th>Album</th>
+				<th>Year</th>
+		</table>
+	  </div>
+	  <div class="col-md-5"> 
+
+		<div id="flip"> <h3>Add New Track </h3></div>
+		 
+		<form id="myForm">
+			<input type="text" name="trackName" id = "name" class = "form-control" placeholder="Track Name" />
+			<br>
+			<input type="text" name="Artist" class = "form-control"  id = "artist" placeholder="Artist Name"/>
+			<br>
+			<input type="text" name="Album" class = "form-control" id = "album" placeholder="Album Name"/>
+			<br>
+			<input type="text" name="Year" class = "form-control" id = "year" placeholder="Release Year"/>
+			<br>
+			<button type="button" class = "btn btn-primary" onclick = "addTrack()">Add me</button>
+			<br>
+			<div id = "saveDiv" class = "alert alert-success">
+				<span id = "saveResult"></span>
+			</div>
+		<br>
+
+		</form>
+			<h3>Delete Track</label></h3><input type="text" name="delete-track" class = "form-control"  id = "delete-track"/><br>
+			<button type="button" class = "btn btn-danger" onclick = "deleteTrack()">Delete Track</button>
+			<br>
+			<div id = "deleteDiv" class = "alert alert-warning">
+				<span id = "deleteResult"></span>
+			</div>
+
+		
+		</div>
+	</div>
+		</div>
+    </div>
+    <footer>
+        &copy; 2014. All rights reserved.
+    </footer>
+  </body>
+</html>

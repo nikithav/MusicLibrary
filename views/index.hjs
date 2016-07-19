@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script type="text/javascript" src = "https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript"> 
+    	$(document).ready(function(){ 
+    		
+        $("#loginFailed").hide();
+    		$("#resultsTable").hide();
+        $("#newUser").hide();
+
+    		getAllTracks();
+
+    	});
+
+      var logIn = function() {
+        var userId = $("#userName").val(),
+            password = $("#password").val();
+        $.ajax({
+          url: '/signin',
+          type: "POST",
+          data: {
+            user: userId,
+            password: password
+          },
+          success: function( data ) {
+            if(data && data.status) {
+              if (data.status == "done") {
+                var url = window.location.href + "profile?user=" + userId;
+                window.location.replace(url);
+              }
+              else if(data.status == "fail") {
+                 $("#loginFailed").show();
+              }
+            }
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown) {
+            console.log("Status: " + textStatus);
+            console.log("Error: " + errorThrown); 
+          } 
+        });
+      
+      };
+
+      var registerUser = function() {
+        var userId = $("#userName").val(),
+            password = $("#password").val();
+        $.ajax({
+          url: '/registration',
+          type: "POST",
+          data: {
+            user: userId,
+            password: password
+          },
+          success: function( response ) {
+            if(response && response.status) {
+              if (response.status == "registered") {
+                   $('#newUser').show();
+                              }
+               }
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown) {
+            console.log("Status: " + textStatus);
+            console.log("Error: " + errorThrown); 
+          } 
+        });
+      
+      } ;
+
+    	var getAllTracks = function() {
+    		$.ajax({
+  				url: "/getAll",
+		  		success: function( data ) {
+    				window.allItems = data;
+    				var $resultsTable = $("#resultsTable");
+    				data.forEach(function(track) { 
+						if(track.name && track.artist && track.album && track.year ) { 
+							var $track = "<tr>" 
+						 				+ "<td>" + track.name + "</td>" 
+						 				+ "<td>" + track.artist + "</td>" 
+						 				+ "<td>" + track.album + "</td>" 
+						 				+ "<td>" + track.year + "</td>" 
+                    + "<td>" + track.user + "</td>"
+						 			+ "</tr>";
+						$resultsTable.append($track);
+						
+    					}
+
+    				});
+    				$resultsTable.show();
+    				$("#track-heading").text("View All Tracks List");
+  				}
+			});
+    	};
+
+
+   	</script>
+  </head>
+  <body>
+  	<div class="container">
+  		<div class="panel panel-default">
+
+  			<div class="panel-heading">
+  				<h2 class="text-center">Music Library</h2>
+  			</div>
+
+  			<div class="panel-body">
+
+	        <div class="col-md-8">
+  	  	    <h3 id="track-heading" class="text-center" >All time favorite Tracks List </h3>
+  	  	    <table class="table table-bordered table-striped" id="resultsTable">
+    				    <th>Track Name</th>
+    				    <th>Artist</th>
+    				    <th>Album</th>
+    				    <th>Year</th>
+                <th>User</th>
+  		      </table>
+	       </div>
+
+         <div class="col-md-4 panel panel-default">
+            <h3 class="text-center">Sign In</h3>
+            <div class="panel-body">
+
+                <form name = "signin" id = "signin" method="post">
+                   <input type="text" name="user" class = "form-control" id = "userName" placeholder="User Name"/>
+                   <br>
+                   <input type="password" name="password" class = "form-control" id = "password" placeholder="Password"/>
+                   <br>
+                   <button type="button" id = "login" class = "btn btn-primary" onclick = "logIn()">Login</button>
+                   <button type="button" id = "register" class = "btn btn-success" onclick = "registerUser()">New User</button>
+                   <br>
+                   </br> 
+                   <div class="alert alert-danger" id="loginFailed">
+                     <span>Login Failed! Bad Credentials :( </span>
+                   </div>
+                   <div class="alert alert-success" id="newUser">
+                     <span>You are successfully registered </span>
+                   </div>
+                </form>
+
+            </div>      
+         </div>  
+
+	      </div>
+		  </div>
+    </div>
+    <footer>
+        &copy; 2014. All rights reserved.
+    </footer>
+  </body>
+</html>
